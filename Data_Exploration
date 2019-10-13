@@ -1,0 +1,74 @@
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import seaborn as sns 
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+
+from subprocess import check_output
+print(check_output(["ls", "../input"]).decode("utf8"))
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+        
+        
+df=pd.read_csv("../input/titanic/train.csv")
+df_test=pd.read_csv("../input/titanic/test.csv")
+df_gender=pd.read_csv("../input/titanic/gender_submission.csv")
+
+df.head()
+
+df.shape
+
+df.describe()
+
+df.info()
+
+df.columns
+
+
+df.drop(['PassengerId'],axis=1,inplace=True)
+df.drop(['Ticket'],axis=1,inplace=True)
+df.head()
+
+
+#clean data
+def clean_data(df):
+    df["fare"]=df["fare"].fillna(df["fare"].dropna().median())
+    df["age"]=df["age"].fillna(df["age"].dropna().median())
+    
+    df.loc[df["gender"]=="male","gender"]=0
+    df.loc[df["gender"]=="female","gender"]=1
+    
+    df["embarked"]=df["embarked"].fillna("S")
+    df.loc[df["embarked"]=="S","embarked"]=0
+    df.loc[df["embarked"]=="C","embarked"]=1
+    df.loc[df["embarked"]=="Q","embarked"]=2
+    
+    
+df.columns=["survived","pclass","name","gender","age","sibsp","parch","fare","cabin","embarked"]
+
+#count the number of missing values in the dataframe
+df.isnull().sum()
+
+
+df.boxplot()
+
+fig = plt.figure(figsize = (8,8))
+ax = fig.gca()
+df.hist(ax=ax)
+plt.show()
+
+def impute_median(series):
+    return series.fillna(series.median())
+    
+df.age=df.age.transform(impute_median)
+
+fig,axes=plt.subplots(nrows=2,ncols=1)
+df.plot(kind='hist',y='age',bins=50,range=(0,100),density=True,ax=axes[0])
+df.plot(kind='hist',y='age',bins=50,range=(0,100),density=True,ax=axes[1],cumulative=True)
+plt.show()
+    
+    
